@@ -1,0 +1,34 @@
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+
+dependencies {
+    implementation gradleApi() //gradle sdk
+    implementation localGroovy() //groovy sdk
+    implementation 'com.android.tools.build:gradle:3.3.1'  //build tools
+    implementation 'com.android.tools.build:transform-api:1.5.0' //transform
+    implementation group: 'org.javassist', name: 'javassist', version: '3.23.0-GA'
+}
+repositories {
+    google()
+}
+
+//apply from: configs.xerepo
+//apply plugin: 'maven'
+
+//afterEvaluate { project ->
+//    def groupId = project.group
+//    def artifactId = project.name
+//    def ver = project.version
+//
+//    uploadArchives {
+//        repositories {
+//            mavenDeployer {
+//                repository(url: uri(xeRepo))
+//                pom.groupId = groupId
+//                pom.artifactId = artifactId
+//                pom.version = ver
+//            }
+//        }
+//    }
+//}

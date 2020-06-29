@@ -1,0 +1,6 @@
+ext {
+    def gradleDir = "${rootDir}/gradle"
+    configs = [
+            plugin: "$gradleDir/plugin.gradle",
+    ]
+}
