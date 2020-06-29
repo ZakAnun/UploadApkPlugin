@@ -18,6 +18,11 @@ class UploadExtension {
     String appName = ""
 
     /**
+     * appVersionName
+     */
+    String appVersionName = ""
+
+    /**
      * appVersion
      */
     String appVersion = ""

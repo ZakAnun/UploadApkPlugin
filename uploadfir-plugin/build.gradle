@@ -1,7 +1,7 @@
 apply from: configs.plugin
 apply plugin: 'com.github.dcendents.android-maven'
 
-version '1.0.2'
+version '1.0.3'
 
 dependencies {
 

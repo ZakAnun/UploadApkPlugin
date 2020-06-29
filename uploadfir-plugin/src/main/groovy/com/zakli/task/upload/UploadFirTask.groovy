@@ -50,7 +50,6 @@ class UploadFirTask extends DefaultTask {
         }
 
         def variantName = variant.name.capitalize()
-        def projectName = targetProject.name
         def applicationId = variant.getApplicationId()
 
         def iterator = variant.outputs.iterator()
@@ -62,10 +61,17 @@ class UploadFirTask extends DefaultTask {
                 def file = new File(apkFile.path)
 
                 if (isAppNameValidated(extension.appName)) {
-                    extension.appName = "${projectName}-${variantName} ${variant.versionName}"
+                    extension.appName = "${targetProject.rootProject.name}-${variantName}"
                 } else {
                     def oldName = extension.appName
-                    extension.appName = "${oldName}-${variantName} ${variant.versionName}"
+                    extension.appName = "${oldName}-${variantName}"
+                }
+
+                if (isAppVersionNameValidated(extension.appVersionName)) {
+                    extension.appVersionName = "${variant.versionName}"
+                } else {
+                    def oldName = extension.appVersionName
+                    extension.appVersionName = "${oldName}-${variant.versionName}"
                 }
 
                 if (isAppVersionValidated(extension.appVersion)) {
@@ -195,7 +201,7 @@ class UploadFirTask extends DefaultTask {
         builder.addTextBody("key", key, contentType)
         builder.addTextBody("token", token, contentType)
         builder.addTextBody("x:name", "${extension.appName}", contentType)
-        builder.addTextBody("x:version", "${extension.appName}", contentType)
+        builder.addTextBody("x:version", "${extension.appVersionName}", contentType)
         builder.addTextBody("x:build", "${extension.appVersion}", contentType)
         builder.addTextBody("x:changelog", "${extension.appChangeLog}", contentType)
 
@@ -238,6 +244,15 @@ class UploadFirTask extends DefaultTask {
      */
     def isAppNameValidated(String appName) {
         return appName == null || appName.length() == 0
+    }
+
+    /**
+     * appDisplayName 是否有值
+     * @param appDisplayName
+     * @return true 没有值，false 有值
+     */
+    def isAppVersionNameValidated(String appVersionName) {
+        return appVersionName == null || appVersionName.length() == 0
     }
 
     /**
