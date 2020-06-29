@@ -4,5 +4,5 @@ apply plugin: 'com.github.dcendents.android-maven'
 version '1.0.0'
 
 dependencies {
-    implementation 'com.alibaba:fastjson:1.2.70'
+
 }

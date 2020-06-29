@@ -1,9 +1,9 @@
 package com.zakli.task.upload
 
-import com.alibaba.fastjson.JSONObject
 import com.android.build.gradle.api.BaseVariant
 import com.zakli.task.bean.IStreamListener
 import com.zakli.task.bean.ProgressFileBody
+import groovy.json.JsonSlurper
 import org.apache.http.Consts
 import org.apache.http.HttpEntity
 import org.apache.http.NameValuePair
@@ -83,11 +83,10 @@ class UploadFirTask extends DefaultTask {
                         "flavorName = ${variant.flavorName} \n")
 
                 def target = obtainUploadParam(applicationId, extension.apiToken)
-                if (target != null && target instanceof JSONObject) {
-                    def targetJson = target as JSONObject
-                    def key = targetJson.getString("key")
-                    def token = targetJson.getString("token")
-                    def uploadUrl = targetJson.getString("upload_url")
+                if (target != null) {
+                    def key = target['key'].toString()
+                    def token = target['token'].toString()
+                    def uploadUrl = target['upload_url'].toString()
 
                     if (key == null || token == null || uploadUrl == null) {
                         println("获取上传参数出错，结束...")
@@ -128,13 +127,14 @@ class UploadFirTask extends DefaultTask {
             println(firApiResponse.getStatusLine())
             HttpEntity entity = firApiResponse.getEntity()
             def resultStr = EntityUtils.toString(entity)
-            JSONObject result = JSONObject.parse(resultStr)
-            def cert = obtainCert(result)
+            def jsonController = new JsonSlurper()
+            def result = jsonController.parseText(resultStr)
+            def cert = result['cert']
             if (cert == null) {
-                def msg = result.getString("msg")
+                def msg = result['msg']
                 println("cert is null cause by " + msg == null ? "unknown" : msg)
             } else {
-                def binary = obtainBinary(cert)
+                def binary = cert['binary']
                 if (binary != null) {
                     target = binary
                 }
@@ -156,24 +156,6 @@ class UploadFirTask extends DefaultTask {
         }
 
         return target
-    }
-
-    /**
-     * 获取 cert
-     * @param result 请求数据
-     * @return cert json 对象
-     */
-    def obtainCert(JSONObject result) {
-        return ((JSONObject) result.get("cert"))
-    }
-
-    /**
-     * 获取 binary
-     * @param cert
-     * @return
-     */
-    def obtainBinary(JSONObject cert) {
-        return ((JSONObject) cert.get("binary"))
     }
 
     /**
