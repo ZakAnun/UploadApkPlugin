@@ -38,6 +38,9 @@ uploadFir {
 }
 ```
 
----
+## 运行插件任务
+
+方法一: 双击 build tab 下对应的 task <br/>
+方法二: `./gradlew :app:assembleVariantNameUploadFir` （这里面的 variantName 表示是什么包）
 
 欢迎与我联系，一起交流（linhenji@163.com）
