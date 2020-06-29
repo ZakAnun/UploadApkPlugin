@@ -22,7 +22,7 @@ buildscript {
     }
     dependencies {
       ...
-        classpath 'com.github.zak-ml:UploadFirPlugin:1.0.1'
+        classpath 'com.github.zak-ml:UploadFirPlugin:1.0.1' // 请使用最新版本~
 
     }
 }
