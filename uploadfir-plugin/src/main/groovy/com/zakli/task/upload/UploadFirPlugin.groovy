@@ -17,6 +17,10 @@ class UploadFirPlugin implements Plugin<Project> {
         if (!project.plugins.hasPlugin("com.android.application")) {
             throw new ProjectConfigurationException("Plugin requires the 'com.android.application' plugin to be configured.", null)
         }
+        // add dependencies
+        project.repositories.maven {
+            url "https://jitpack.io"
+        }
 
         applyExtension(project)
 
