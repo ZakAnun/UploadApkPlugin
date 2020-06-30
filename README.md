@@ -33,7 +33,7 @@ apply plugin: 'uploadFir'
 
 uploadFir {
     appName = "Upload Demo" // 上传的 app 名字
-    apiToken = "cc972e5b5ad466bccf83319bf46a7909" // apiToken 需要在 fir.im 申请（这是我的 api_token）
+    apiToken = "token msg" // apiToken 需要在 betaqr.com（fir.im） 申请
     appChangeLog = "测试上传" // 修改日志
 }
 ```
