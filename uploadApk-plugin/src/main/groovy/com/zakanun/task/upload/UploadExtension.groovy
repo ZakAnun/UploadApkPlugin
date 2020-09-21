@@ -1,4 +1,4 @@
-package com.zakli.task.upload
+package com.zakanun.task.upload
 
 import org.gradle.api.Project
 
@@ -31,6 +31,11 @@ class UploadExtension {
      * appChangeLog
      */
     String appChangeLog = ""
+
+    /**
+     * extensionParams 为兼容不同平台都可以使用，暴露 map 参数列表作为参数列表
+     */
+    Map extensionParams = null
 
     UploadExtension(Project project) {
 

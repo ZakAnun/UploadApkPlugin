@@ -4,7 +4,7 @@ apply plugin: 'java'
 dependencies {
     implementation gradleApi() //gradle sdk
     implementation localGroovy() //groovy sdk
-    implementation 'com.android.tools.build:gradle:3.3.1'  //build tools
+    implementation 'com.android.tools.build:gradle:4.0.1'  //build tools
     implementation 'com.android.tools.build:transform-api:1.5.0' //transform
     implementation group: 'org.javassist', name: 'javassist', version: '3.23.0-GA'
 }

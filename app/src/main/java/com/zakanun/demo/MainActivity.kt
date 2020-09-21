@@ -1,4 +1,4 @@
-package com.zakli.uploadfirplugin
+package com.zakanun.demo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

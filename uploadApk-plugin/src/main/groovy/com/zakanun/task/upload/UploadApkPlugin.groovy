@@ -1,4 +1,4 @@
-package com.zakli.task.upload
+package com.zakanun.task.upload
 
 import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.Plugin
@@ -8,9 +8,9 @@ import org.gradle.api.ProjectConfigurationException
 /**
  * 上传 fir 插件
  */
-class UploadFirPlugin implements Plugin<Project> {
+class UploadApkPlugin implements Plugin<Project> {
 
-    public static final String sPluginExtensionName = "uploadFir"
+    public static final String sPluginExtensionName = "uploadApk"
 
     @Override
     void apply(Project project) {
@@ -36,7 +36,7 @@ class UploadFirPlugin implements Plugin<Project> {
             project.android.applicationVariants.all { BaseVariant variant ->
                 def variantName = variant.name.capitalize()
 
-                UploadFirTask uploadTask = project.tasks.create("assemble${variantName}UploadFir", UploadFirTask)
+                UploadApkTask uploadTask = project.tasks.create("assemble${variantName}UploadApk", UploadApkTask)
                 uploadTask.targetProject = project
                 uploadTask.variant = variant
                 uploadTask.setup()

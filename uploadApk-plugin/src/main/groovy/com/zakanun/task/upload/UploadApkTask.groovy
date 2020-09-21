@@ -1,8 +1,8 @@
-package com.zakli.task.upload
+package com.zakanun.task.upload
 
 import com.android.build.gradle.api.BaseVariant
-import com.zakli.task.bean.IStreamListener
-import com.zakli.task.bean.ProgressFileBody
+import com.zakanun.task.bean.IStreamListener
+import com.zakanun.task.bean.ProgressFileBody
 import groovy.json.JsonSlurper
 import org.apache.http.Consts
 import org.apache.http.HttpEntity
@@ -26,7 +26,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * 上传任务
  */
-class UploadFirTask extends DefaultTask {
+class UploadApkTask extends DefaultTask {
 
     private static final String DOT_APK = ".apk"
 

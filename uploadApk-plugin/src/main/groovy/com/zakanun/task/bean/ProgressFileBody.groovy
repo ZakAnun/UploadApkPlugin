@@ -1,4 +1,4 @@
-package com.zakli.task.bean
+package com.zakanun.task.bean
 
 import org.apache.commons.io.output.CountingOutputStream
 import org.apache.http.entity.ContentType
