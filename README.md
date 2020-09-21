@@ -67,4 +67,8 @@ uploadApk {
 需要检查是否已经在该网站上执行实名操作（插件也会提示）<br/>
 2、demo 中直接执行上传是不会成功的，需要写入对应平台的信息~
 
+## LICENSE
+
+Under the MIT license. See LICENSE file for details.
+
 欢迎与我联系，一起交流（linhenji@163.com）
