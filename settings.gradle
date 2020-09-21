@@ -1,3 +1,3 @@
-include ':uploadapk-plugin'
 include ':app'
+include ':uploadapk-plugin'
 rootProject.name = "UploadApkPlugin"

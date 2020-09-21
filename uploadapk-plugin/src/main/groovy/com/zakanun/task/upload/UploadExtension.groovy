@@ -7,35 +7,26 @@ import org.gradle.api.Project
  */
 class UploadExtension {
 
-    /**
-     * apiToken
-     */
-    String apiToken = ""
+    static final String FIR = "fir"
+    static final String PGY = "pgy"
 
     /**
-     * appName
+     * 目前支持的内测厂商（默认是 fir）
+     *
+     * 1、fir
+     * 2、pgy
      */
-    String appName = ""
+    String product = "fir"
 
     /**
-     * appVersionName
+     * obtainUploadUrlParams 获取上传凭证参数
      */
-    String appVersionName = ""
+    Map obtainUploadUrlParams = null
 
     /**
-     * appVersion
+     * 上传参数
      */
-    String appVersion = ""
-
-    /**
-     * appChangeLog
-     */
-    String appChangeLog = ""
-
-    /**
-     * extensionParams 为兼容不同平台都可以使用，暴露 map 参数列表作为参数列表
-     */
-    Map extensionParams = null
+    Map uploadParams = null
 
     UploadExtension(Project project) {
 

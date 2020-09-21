@@ -28,15 +28,13 @@ import org.gradle.api.tasks.TaskAction
  */
 class UploadApkTask extends DefaultTask {
 
-    private static final String DOT_APK = ".apk"
-
     @Input
     public BaseVariant variant
     @Input
     public Project targetProject
 
     public void setup() {
-        description "Upload fir apk"
+        description "Upload apk"
         group "Build"
     }
 
@@ -44,94 +42,58 @@ class UploadApkTask extends DefaultTask {
     public void upload() {
         UploadExtension extension = UploadExtension.getConfig(targetProject)
 
-        if (!isApiTokenValidated(extension.apiToken)) {
-            targetProject.logger.error("需要传入 apiToken，可以到 fir.im 上进行申请")
-            return
-        }
-
-        def variantName = variant.name.capitalize()
-        def applicationId = variant.getApplicationId()
-
-        def iterator = variant.outputs.iterator()
-        while (iterator.hasNext()) {
-            def it = iterator.next()
-            def apkFile = it.outputFile
-
+        def output = variant.outputs[0]
+        if (output != null) {
+            def apkFile = output.outputFile
             try {
                 def file = new File(apkFile.path)
+                if (extension.product == UploadExtension.FIR) {
+                    def target = obtainFirUploadParam(extension.obtainUploadUrlParams)
+                    if (target != null) {
+                        def key = target['key'].toString()
+                        def token = target['token'].toString()
+                        def uploadUrl = target['upload_url'].toString()
 
-                if (isAppNameValidated(extension.appName)) {
-                    extension.appName = "${targetProject.rootProject.name}-${variantName}"
-                } else {
-                    def oldName = extension.appName
-                    extension.appName = "${oldName}-${variantName}"
-                }
+                        println("key = $key, token = $token, uploadUrl = $uploadUrl")
+                        if (key == null || token == null || uploadUrl == null) {
+                            targetProject.logger.error("获取上传参数出错，结束...")
+                            return
+                        }
 
-                if (isAppVersionNameValidated(extension.appVersionName)) {
-                    extension.appVersionName = "${variant.versionName}"
-                } else {
-                    def oldName = extension.appVersionName
-                    extension.appVersionName = "${oldName}-${variant.versionName}"
-                }
-
-                if (isAppVersionValidated(extension.appVersion)) {
-                    extension.appVersion = "${variant.versionCode}"
-                }
-
-                println("关键参数 " +
-                        "applicationId = ${applicationId} \n" +
-                        "apkPath = ${apkFile.path} \n" +
-                        "apkSize = ${file.size()} \n" +
-                        "apiToken = ${extension.apiToken} \n" +
-                        "appName = ${extension.appName} \n" +
-                        "versionCode = ${variant.versionCode} \n" +
-                        "versionName = ${variant.versionName} \n" +
-                        "flavorName = ${variant.flavorName} \n")
-
-                def target = obtainUploadParam(applicationId, extension.apiToken)
-                if (target != null) {
-                    def key = target['key'].toString()
-                    def token = target['token'].toString()
-                    def uploadUrl = target['upload_url'].toString()
-
-                    if (key == null || token == null || uploadUrl == null) {
-                        println("获取上传参数出错，结束...")
-                        return
+                        doFirUpload(extension.uploadParams, file, key, token, uploadUrl)
                     }
-
-                    doUpload(extension, file, key, token, uploadUrl)
+                } else if (extension.product == UploadExtension.PGY) {
+                    doPgyUpload(extension.uploadParams, file)
+                } else {
+                    targetProject.logger.error("暂不支持其他的内测平台...")
                 }
             } catch (Exception e) {
                 println("apk 文件没找到... 原因: ${e.message}")
             }
-            // 只执行一次循环
-            break
         }
     }
 
     /**
      * 获取上传参数
      *
-     * @param bundleId
-     * @param apiToken
-     * @return
+     * @param obtainUploadUrlParams 获取上传 url 参数
+     * @return 获取结果
      */
-    def obtainUploadParam(String bundleId, String apiToken) {
-
+    static def obtainFirUploadParam(Map<String, String> obtainUploadUrlParams) {
         CloseableHttpClient httpclient = HttpClients.createDefault()
-        HttpPost firApiPost = new HttpPost("http://api.bq04.com/apps")
+        HttpPost apkApiPost = new HttpPost("http://api.bq04.com/apps")
         // 拼接参数
         List <NameValuePair> nvp = new ArrayList <NameValuePair>()
-        nvp.add(new BasicNameValuePair("type", "android"))
-        nvp.add(new BasicNameValuePair("bundle_id", bundleId))
-        nvp.add(new BasicNameValuePair("api_token", apiToken))
-        firApiPost.setEntity(new UrlEncodedFormEntity(nvp))
-        CloseableHttpResponse firApiResponse = httpclient.execute(firApiPost)
+        for (kv in obtainUploadUrlParams) {
+            nvp.add(new BasicNameValuePair(kv.key, kv.value))
+        }
+        apkApiPost.setEntity(new UrlEncodedFormEntity(nvp))
+        CloseableHttpResponse apkApiResponse = httpclient.execute(apkApiPost)
 
         def target = null
         try {
-            println(firApiResponse.getStatusLine())
-            HttpEntity entity = firApiResponse.getEntity()
+            println(apkApiResponse.getStatusLine())
+            HttpEntity entity = apkApiResponse.getEntity()
             def resultStr = EntityUtils.toString(entity)
             def jsonController = new JsonSlurper()
             def result = jsonController.parseText(resultStr)
@@ -155,7 +117,7 @@ class UploadApkTask extends DefaultTask {
         } finally {
             try {
                 httpclient.close()
-                firApiResponse.close()
+                apkApiResponse.close()
             } catch (IOException e) {
                 println("${e.message}")
             }
@@ -167,16 +129,16 @@ class UploadApkTask extends DefaultTask {
     /**
      * 执行上传
      *
-     * @param extension
+     * @param uploadParams
      * @param file
      * @param key
      * @param token
      * @param uploadUrl
      * @return
      */
-    def doUpload(UploadExtension extension, File file,
-                 String key, String token, String uploadUrl) {
-        println("======================= 开始上传 =======================")
+    static def doFirUpload(Map<String, String> uploadParams, File file,
+                           String key, String token, String uploadUrl) {
+        println("======================= 开始 FIR 上传 =======================")
         CloseableHttpClient httpClient = HttpClients.createDefault()
         HttpPost firApiPost = new HttpPost(uploadUrl)
         RequestConfig config = RequestConfig
@@ -185,12 +147,13 @@ class UploadApkTask extends DefaultTask {
                 .setConnectTimeout(20000)
                 .build()
         firApiPost.setConfig(config)
-        ProgressFileBody fileBody = new ProgressFileBody(file, ContentType.APPLICATION_OCTET_STREAM,
-                "${extension.appName}${DOT_APK}")
+        ProgressFileBody fileBody = new ProgressFileBody(file,
+                ContentType.APPLICATION_OCTET_STREAM,
+                file.getName())
         fileBody.setListener(new IStreamListener() {
             @Override
             void onProgress(Integer progress) {
-                println("> Task :xe-upload-fir PROGRESS ==========> ${progress}%")
+                println("> Task :upload-fir PROGRESS ==========> ${progress}%")
             }
         })
         MultipartEntityBuilder builder = MultipartEntityBuilder.create()
@@ -200,10 +163,9 @@ class UploadApkTask extends DefaultTask {
         builder.addPart("file", fileBody)
         builder.addTextBody("key", key, contentType)
         builder.addTextBody("token", token, contentType)
-        builder.addTextBody("x:name", "${extension.appName}", contentType)
-        builder.addTextBody("x:version", "${extension.appVersionName}", contentType)
-        builder.addTextBody("x:build", "${extension.appVersion}", contentType)
-        builder.addTextBody("x:changelog", "${extension.appChangeLog}", contentType)
+        for (kv in uploadParams) {
+            builder.addTextBody(kv.key, kv.value, contentType)
+        }
 
         HttpEntity entity = builder.build()
         firApiPost.setEntity(entity)
@@ -224,7 +186,7 @@ class UploadApkTask extends DefaultTask {
             try {
                 httpClient.close()
                 response.close()
-                println("======================= 结束上传 =======================")
+                println("======================= 结束 FIR 上传 =======================")
             } catch (IOException e) {
                 println("${e.message}")
             }
@@ -233,35 +195,57 @@ class UploadApkTask extends DefaultTask {
         return result
     }
 
-    def isApiTokenValidated(String apiToken) {
-        return apiToken != null && apiToken.length() > 0
-    }
+    static def doPgyUpload(Map<String, String> uploadParams, File file) {
+        println("======================= 开始 PGY 上传 =======================")
+        CloseableHttpClient httpClient = HttpClients.createDefault()
+        HttpPost pgyApiPost = new HttpPost("https://upload.pgyer.com/apiv1/app/upload")
+        RequestConfig config = RequestConfig
+                .custom()
+                .setSocketTimeout(30000)
+                .setConnectTimeout(20000)
+                .build()
+        pgyApiPost.setConfig(config)
+        ProgressFileBody fileBody = new ProgressFileBody(file, ContentType.APPLICATION_OCTET_STREAM, file.getName())
+        fileBody.setListener(new IStreamListener() {
+            @Override
+            void onProgress(Integer progress) {
+                println("> Task :upload-pgy PROGRESS ==========> ${progress}%")
+            }
+        })
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+        ContentType contentType = ContentType.create("text/plain", Consts.UTF_8)
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+        builder.setCharset(Consts.UTF_8)
+        builder.addPart("file", fileBody)
+        for (kv in uploadParams) {
+            builder.addTextBody(kv.key, kv.value, contentType)
+        }
 
-    /**
-     * appName 是否有值
-     * @param appName
-     * @return true 没有值，false 有值
-     */
-    def isAppNameValidated(String appName) {
-        return appName == null || appName.length() == 0
-    }
+        HttpEntity entity = builder.build()
+        pgyApiPost.setEntity(entity)
+        String result = ""
+        CloseableHttpResponse response = httpClient.execute(pgyApiPost)
+        try {
+            HttpEntity resEntity = response.getEntity()
+            if (entity != null) {
+                result = EntityUtils.toString(resEntity, Consts.UTF_8)
+                println()
+                println("response content: " + result)
+                println()
+            }
+            EntityUtils.consume(entity)
+        } catch (IOException e) {
+            println("${e.message}")
+        } finally {
+            try {
+                httpClient.close()
+                response.close()
+                println("======================= 结束 PGY 上传 =======================")
+            } catch (IOException e) {
+                println("${e.message}")
+            }
+        }
 
-    /**
-     * appDisplayName 是否有值
-     * @param appDisplayName
-     * @return true 没有值，false 有值
-     */
-    def isAppVersionNameValidated(String appVersionName) {
-        return appVersionName == null || appVersionName.length() == 0
+        return result
     }
-
-    /**
-     * appVersion 是否有值
-     * @param appVersion
-     * @return true 没有值，false 有值
-     */
-    def isAppVersionValidated(String appVersion) {
-        return appVersion == null || appVersion.length() == 0
-    }
-
 }
