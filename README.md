@@ -34,7 +34,7 @@ app build.gradle
 apply plugin: 'uploadApk'
 
 uploadApk {
-	// product 是传厂商的名字，目前仅支持 fir 和 pgy...
+    // product 是传厂商的名字，目前仅支持 fir 和 pgy...
     product = "fir"
     // fir 需要先通过接口获取上传的 url 和 token，所以提供了获取上传 url 的参数配置
     obtainUploadUrlParams = ['type': "android",
