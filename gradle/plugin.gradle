@@ -11,23 +11,3 @@ dependencies {
 repositories {
     google()
 }
-
-//apply from: configs.xerepo
-//apply plugin: 'maven'
-
-//afterEvaluate { project ->
-//    def groupId = project.group
-//    def artifactId = project.name
-//    def ver = project.version
-//
-//    uploadArchives {
-//        repositories {
-//            mavenDeployer {
-//                repository(url: uri(xeRepo))
-//                pom.groupId = groupId
-//                pom.artifactId = artifactId
-//                pom.version = ver
-//            }
-//        }
-//    }
-//}
